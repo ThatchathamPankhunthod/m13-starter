@@ -8,12 +8,8 @@ $input = json_decode(file_get_contents('php://input'), true);
 if (!is_array($input)) sendJson(['error' => 'Invalid request body'], 400);
 $portfolioId = $input['portfolioId'] ?? '';
 $data = $input['data'] ?? null;
-$fileHash = $input['fileHash'] ?? '';
 if (!is_string($portfolioId) || $portfolioId === '' || !is_array($data)) {
     sendJson(['error' => 'Portfolio and valid JSON data are required'], 400);
-}
-if (!is_string($fileHash) || !preg_match('/^(?:[a-f0-9]{64}|fnv-[a-f0-9]+)$/', $fileHash)) {
-    sendJson(['error' => 'Invalid file fingerprint'], 400);
 }
 
 $portfolios = readPortfolios();
@@ -23,13 +19,8 @@ foreach ($portfolios as $i => $portfolio) {
 }
 if ($targetIndex === null) sendJson(['error' => 'Portfolio not found'], 404);
 
-// A persistent fingerprint prevents the exact same source file being imported again.
-$importsFile = DATA_DIR . '/imports.json';
-$imports = file_exists($importsFile) ? (json_decode(file_get_contents($importsFile), true) ?: []) : [];
-$scopedFileHash = $portfolioId . ':' . $fileHash;
-if (in_array($scopedFileHash, $imports, true)) {
-    sendJson(['duplicateFile' => true, 'imported' => 0, 'skipped' => 0]);
-}
+// Duplicate detection is based on Items currently in this Portfolio.
+// This allows importing an Item again after it has been deleted.
 
 // Accept a single Item, an array of Items, or an exported Portfolio containing items.
 if (isset($data['items']) && is_array($data['items'])) $items = $data['items'];
@@ -66,12 +57,6 @@ foreach ($items as $item) {
 }
 $portfolios[$targetIndex]['items'] = $existing;
 writePortfolios($portfolios);
-{
-    $imports[] = $scopedFileHash;
-    if (@file_put_contents($importsFile, json_encode(array_values(array_unique($imports)), JSON_PRETTY_PRINT), LOCK_EX) === false) {
-        sendJson(['error' => 'Cannot save import history. Check write permission for ' . $importsFile], 500);
-    }
-}
 sendJson(['duplicateFile' => false, 'imported' => $imported, 'skipped' => $skipped], 200);
 
 function itemKey($item) {

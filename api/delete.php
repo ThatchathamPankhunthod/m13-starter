@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Simple delete password for this demo. Change this value to your own code.
-$deletePassword = '13112026';
+$deletePassword = '1234';
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!is_array($input)) sendJson(['error' => 'Invalid request body'], 400);
