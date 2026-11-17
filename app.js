@@ -59,13 +59,35 @@ function showPortfolioList() {
             showPortfolioList();
             showSelectedPortfolio();
         });
-        list.appendChild(button);
+
+        const row = document.createElement('div');
+        row.className = 'portfolio-row d-flex align-items-stretch gap-2';
+        button.classList.add('flex-grow-1');
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-outline-danger btn-sm portfolio-delete';
+        deleteButton.textContent = 'Delete';
+        deleteButton.setAttribute('aria-label', 'Delete Portfolio ' + portfolio.displayName);
+        deleteButton.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            await requestDelete('portfolio', portfolio.id, null, portfolio.displayName);
+        });
+        row.append(button, deleteButton);
+        list.appendChild(row);
     }
 }
 
 function showSelectedPortfolio() {
     const portfolio = portfolios.find(p => p.id === selectedId);
-    if (!portfolio) return;
+    if (!portfolio) {
+        document.querySelector('#portfolio-name').textContent = 'Choose a Portfolio';
+        document.querySelector('#portfolio-enjoy').textContent = '';
+        document.querySelector('#portfolio-tried').textContent = '';
+        document.querySelector('#portfolio-curious').textContent = '';
+        document.querySelector('#item-list').innerHTML = '';
+        updateImportButton();
+        return;
+    }
     document.querySelector('#portfolio-name').textContent = portfolio.displayName;
     document.querySelector('#portfolio-enjoy').textContent = portfolio.whatIEnjoy;
     document.querySelector('#portfolio-tried').textContent = portfolio.whatIveTried;
@@ -82,7 +104,14 @@ function showSelectedPortfolio() {
         const text = document.createElement('p');
         text.className = 'small mb-1';
         text.textContent = item.description + ' — Skills: ' + item.skills.join(', ');
-        card.append(title, text);
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-outline-danger btn-sm mt-2';
+        deleteButton.textContent = 'Delete Item';
+        deleteButton.addEventListener('click', async () => {
+            await requestDelete('item', portfolio.id, item.id, item.title);
+        });
+        card.append(title, text, deleteButton);
 
         for (const url of (Array.isArray(item.evidence) ? item.evidence : [])) {
             if (!url) continue;
@@ -95,6 +124,32 @@ function showSelectedPortfolio() {
             card.appendChild(link);
         }
         list.appendChild(card);
+    }
+}
+
+// Delete actions are verified by PHP on the server; the password is never stored in JS.
+async function requestDelete(kind, portfolioId, itemId, label) {
+    const target = kind === 'portfolio' ? 'Portfolio' : 'Portfolio Item';
+    if (!window.confirm(`Delete ${target} "${label}"? This cannot be undone.`)) return;
+    const password = window.prompt(`Enter the delete password to remove this ${target.toLowerCase()}:`);
+    if (password === null) return;
+    if (!password) {
+        window.alert('Please enter the delete password.');
+        return;
+    }
+    try {
+        const response = await fetch('api/delete.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kind, portfolioId, itemId, password })
+        });
+        const result = await readJson(response);
+        if (!response.ok) throw new Error(result.error || 'Delete failed.');
+        if (kind === 'portfolio' && selectedId === portfolioId) selectedId = null;
+        await loadPortfolios();
+        window.alert(`${target} deleted successfully.`);
+    } catch (error) {
+        window.alert(error.message);
     }
 }
 
