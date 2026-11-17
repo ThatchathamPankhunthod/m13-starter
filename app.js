@@ -55,6 +55,7 @@ function showPortfolioList() {
         button.textContent = portfolio.displayName + ' (' + portfolio.items.length + ' items)';
         button.addEventListener('click', () => {
             selectedId = portfolio.id;
+            updateImportButton();
             showPortfolioList();
             showSelectedPortfolio();
         });
@@ -82,12 +83,15 @@ function showSelectedPortfolio() {
         text.className = 'small mb-1';
         text.textContent = item.description + ' — Skills: ' + item.skills.join(', ');
         card.append(title, text);
-        for (const url of item.evidence) {
+
+        for (const url of (Array.isArray(item.evidence) ? item.evidence : [])) {
+            if (!url) continue;
             const link = document.createElement('a');
             link.href = url;
-            link.textContent = url;
+            link.textContent = 'Evidence: ' + url;
             link.target = '_blank';
-            link.className = 'small d-block';
+            link.rel = 'noopener noreferrer';
+            link.className = 'small d-block mt-2';
             card.appendChild(link);
         }
         list.appendChild(card);
@@ -137,3 +141,112 @@ loadPortfolios().catch((e) => {
     message.className = 'small text-danger mb-0';
     message.textContent = e.message;
 });
+
+
+// ---------- Import / Export ----------
+const importFileInput = document.querySelector('#import-file');
+const importJsonInput = document.querySelector('#import-json');
+const importButton = document.querySelector('#import-item');
+const importStatus = document.querySelector('#import-status');
+
+function updateImportButton() {
+    const hasText = importJsonInput.value.trim().length > 0;
+    const hasFile = Boolean(importFileInput.files[0]);
+    importButton.disabled = !selectedId || (!hasText && !hasFile);
+}
+
+importFileInput.addEventListener('change', () => {
+    const file = importFileInput.files[0];
+    if (file) {
+        importJsonInput.value = '';
+        importStatus.textContent = `Selected file: ${file.name}`;
+        importStatus.className = 'small mb-3 text-muted';
+    } else {
+        importStatus.textContent = '';
+    }
+    updateImportButton();
+});
+
+importJsonInput.addEventListener('input', () => {
+    if (importJsonInput.value.trim()) {
+        importFileInput.value = '';
+    }
+    updateImportButton();
+});
+
+// Export the currently selected Portfolio as a reusable JSON file.
+document.querySelector('#export-portfolio').addEventListener('click', () => {
+    const portfolio = portfolios.find(p => p.id === selectedId);
+    if (!portfolio) {
+        importStatus.textContent = 'Choose a Portfolio before exporting.';
+        importStatus.className = 'small mb-3 text-danger';
+        return;
+    }
+    const blob = new Blob([JSON.stringify(portfolio, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'my-portfolio.json';
+    link.click();
+    URL.revokeObjectURL(url);
+});
+
+// Import JSON pasted in the textarea or selected from a local file.
+importButton.addEventListener('click', async () => {
+    if (!selectedId) return;
+    const file = importFileInput.files[0];
+    const content = importJsonInput.value.trim() || (file ? await file.text() : '');
+    if (!content) return;
+
+    importButton.disabled = true;
+    importStatus.textContent = 'Importing...';
+    importStatus.className = 'small mb-3 text-muted';
+    try {
+        let data;
+        try { data = JSON.parse(content); }
+        catch { throw new Error('Invalid JSON. Please check the pasted text or uploaded file.'); }
+
+        const response = await fetch('api/import.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                portfolioId: selectedId,
+                data,
+                fileHash: await sha256(content)
+            })
+        });
+        const result = await readJson(response);
+        if (!response.ok) throw new Error(result.error || 'Import failed.');
+
+        if (result.duplicateFile) {
+            importStatus.textContent = 'This JSON file was already imported. Duplicate import blocked automatically.';
+            importStatus.className = 'small mb-3 text-warning';
+            importFileInput.value = '';
+            importJsonInput.value = '';
+        } else {
+            importStatus.textContent = `Import complete: ${result.imported} added, ${result.skipped} duplicate(s) skipped.`;
+            importStatus.className = 'small mb-3 text-success';
+            importFileInput.value = '';
+            importJsonInput.value = '';
+            await loadPortfolios();
+        }
+    } catch (error) {
+        importStatus.textContent = error.message;
+        importStatus.className = 'small mb-3 text-danger';
+    } finally {
+        updateImportButton();
+    }
+});
+
+async function sha256(value) {
+    if (window.crypto && crypto.subtle) {
+        const bytes = new TextEncoder().encode(value);
+        const digest = await crypto.subtle.digest('SHA-256', bytes);
+        return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    // Fallback fingerprint; server still validates the format and stores it persistently.
+    let hash = 2166136261;
+    for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+    return 'fnv-' + (hash >>> 0).toString(16);
+}
+

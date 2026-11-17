@@ -19,12 +19,6 @@ $item = [
     'role'        => trim($_POST['role'] ?? ''),
     'description' => trim($_POST['description'] ?? ''),
     'skills'      => array_map('trim', explode(',', $_POST['skills'] ?? '')),   // "HTML, CSS" -> ["HTML", "CSS"]
-    'reflection'  => [
-        'whatIDid'     => trim($_POST['whatIDid'] ?? ''),
-        'whatILearned' => trim($_POST['whatILearned'] ?? ''),
-        'challenge'    => trim($_POST['challenge'] ?? ''),
-        'nextStep'     => trim($_POST['nextStep'] ?? ''),
-    ],
     'evidence'    => [trim($_POST['evidence'] ?? '')],                          // one link -> a list with one link
 ];
 

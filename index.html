@@ -8,18 +8,18 @@
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar py-3">
+    <nav class="navbar navbar-expand-lg py-3">
         <div class="container">
-            <span class="fw-bold fs-5">✦ Power Up!</span>
-            <span class="small text-muted">Saved on the server — open it on any device.</span>
+            <a class="navbar-brand fw-bold" href="#top"><span class="brand-mark">✦</span> Power Up!</a>
+            <span class="nav-note"><span class="status-dot"></span> Saved securely on your server</span>
         </div>
     </nav>
 
-    <main class="container pb-5">
+    <main class="container pb-5" id="top">
         <div class="row g-4">
             <!-- LEFT: list of Portfolios + create form -->
             <section class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card app-card portfolio-panel p-4 mb-4">
                     <h2 class="h5 fw-bold">Portfolios</h2>
                     <div id="portfolio-list" class="d-grid gap-2"></div>
                     <p id="list-empty" class="small text-muted mb-0">No Portfolios yet.</p>
@@ -43,15 +43,26 @@
 
             <!-- RIGHT: selected Portfolio, its Items, add-Item form -->
             <section class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card app-card p-4 mb-4">
                     <h2 class="h4 fw-bold" id="portfolio-name">Choose a Portfolio</h2>
                     <p class="mb-1"><strong>What I enjoy:</strong> <span id="portfolio-enjoy"></span></p>
                     <p class="mb-1"><strong>What I've tried:</strong> <span id="portfolio-tried"></span></p>
                     <p><strong>What I'm curious about:</strong> <span id="portfolio-curious"></span></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="import-json">Import Portfolio Item (paste JSON)</label>
+                        <textarea class="form-control mb-2" id="import-json" rows="5" placeholder='Paste JSON here, e.g. { "title": "My project", "type": "Project" }'></textarea>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <label class="form-label small mb-0" for="import-file">Or upload a JSON file:</label>
+                            <input class="form-control form-control-sm" style="max-width: 320px" type="file" id="import-file" accept=".json,application/json">
+                            <button class="btn btn-primary btn-sm" type="button" id="import-item" disabled>Import</button>
+                            <button class="btn btn-outline-primary btn-sm" type="button" id="export-portfolio">Export My Portfolio</button>
+                        </div>
+                    </div>
+                    <p id="import-status" class="small mb-3" role="status" aria-live="polite"></p>
                     <div id="item-list" class="d-grid gap-3"></div>
                 </div>
 
-                <div class="form-panel rounded-4 p-4">
+                <div class="form-panel add-panel rounded-4 p-4 mb-4">
                     <h2 class="h5 fw-bold">Add a Portfolio Item</h2>
                     <form id="item-form">
                         <div class="row g-2">
@@ -61,10 +72,6 @@
                             <div class="col-md-6"><label class="form-label" for="role">Role</label><input class="form-control" id="role" name="role"></div>
                             <div class="col-md-6"><label class="form-label" for="skills">Skills (comma separated)</label><input class="form-control" id="skills" name="skills" placeholder="HTML, CSS"></div>
                             <div class="col-12"><label class="form-label" for="description">Description</label><input class="form-control" id="description" name="description"></div>
-                            <div class="col-md-6"><label class="form-label" for="whatIDid">What I did</label><input class="form-control" id="whatIDid" name="whatIDid"></div>
-                            <div class="col-md-6"><label class="form-label" for="whatILearned">What I learned</label><input class="form-control" id="whatILearned" name="whatILearned"></div>
-                            <div class="col-md-6"><label class="form-label" for="challenge">Challenge</label><input class="form-control" id="challenge" name="challenge"></div>
-                            <div class="col-md-6"><label class="form-label" for="nextStep">Next step</label><input class="form-control" id="nextStep" name="nextStep"></div>
                             <div class="col-12"><label class="form-label" for="evidence">Evidence link</label><input class="form-control" id="evidence" name="evidence" type="url" placeholder="https://..."></div>
                         </div>
                         <p class="form-error small my-2" id="item-error" role="alert"></p>
@@ -73,6 +80,7 @@
                 </div>
             </section>
         </div>
+
     </main>
 
     <script src="app.js"></script>

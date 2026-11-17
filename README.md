@@ -10,6 +10,9 @@ Follows the Power Up! Data Contract v1.0 (see portfolio-example.json).
 | `api/storage.php` | Shared helpers: readPortfolios, writePortfolios, sendJson |
 | `api/portfolios.php` | GET = all Portfolios · POST = create ONE Portfolio |
 | `api/items.php` | POST = add ONE Item to ONE Portfolio |
+| `api/import.php` | POST = import Portfolio Item JSON with duplicate protection |
+| `api/reflection.php` | POST = add/update Reflection on an imported Item |
+| `api/feedback.php` | POST = save Peer Testing feedback on the server |
 
 How data travels: the browser sends **form fields** (`new FormData(form)`) → PHP reads `$_POST` (same as php_form/receive.php) → PHP stores and answers **JSON**.
 Every input needs a `name="..."` attribute (use the Contract field names) so FormData can send it.
@@ -61,3 +64,11 @@ sudo cp -r ~/m12-portfolio/* /var/www/html/
 
 Errors: DevTools → Network/Console, and `sudo tail /var/log/apache2/error.log`.
 Note: GitHub Pages cannot run PHP — test with `php -S` on your laptop, then on the EC2 URL.
+
+
+## Final Demo additions
+- Import a friend's Portfolio Item JSON into the selected Portfolio. Exact file fingerprints and duplicate Item fields are checked when duplicate protection is enabled.
+- Add or edit Reflection for each Item and save it to the server.
+- Evidence links are displayed with each Item.
+- Submit Peer Testing & Constructive Feedback; feedback is stored in `local-data/feedback.json` locally or `/var/www/data/feedback.json` on EC2.
+- Export My Portfolio downloads the selected Portfolio as `my-portfolio.json`-compatible JSON.

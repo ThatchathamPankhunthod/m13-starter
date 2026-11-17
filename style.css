@@ -1,21 +1,4 @@
-body {
-    background: #f6f7f9;
-    color: #26323a;
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-.hero {
-    background: #e6efeb;
-    color: #172c2a;
-}
-.hero p { color: #536662; }
-.tracking { letter-spacing: .13em; }
-.card { background: #fff; }
-.form-panel { background: #20343a; color: #fff; }
-.form-panel .tracking, .form-hint { color: #c0d3d2; }
-.form-label { font-size: .9rem; font-weight: 600; }
-.form-control { border-radius: .65rem; padding: .68rem .8rem; }
-.form-error { color: #ffbec3; min-height: 1.3em; }
-.btn-success { background: #177966; border-color: #177966; }
-.btn-success:hover { background: #116351; border-color: #116351; }
-.portfolio-btn.active { background: #177966; color: #fff; }
-.item-card { background: #f6f7f9; }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--ink:#172b3a;--muted:#71808d;--mint:#bdf3dc;--green:#157a62;--deep:#123d3b;--line:#e7edf0;--paper:#f5f8f7}
+*{box-sizing:border-box}body{background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh}.navbar{background:rgba(255,255,255,.88);border-bottom:1px solid #e9efed;backdrop-filter:blur(12px)}.navbar-brand{color:var(--ink);font-family:Manrope,sans-serif;letter-spacing:-.04em;font-size:1.25rem}.brand-mark{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:11px;background:var(--deep);color:var(--mint);margin-right:7px}.nav-note{font-size:.82rem;color:var(--muted)}.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#28b783;margin-right:7px;box-shadow:0 0 0 4px #e2f7ee}.app-card,.form-panel{border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 8px 28px rgba(27,57,66,.045)}.app-card h2,.form-panel h2{font-family:Manrope,sans-serif;letter-spacing:-.035em}.form-panel{background:var(--deep);color:#fff;border:0;box-shadow:0 14px 30px rgba(18,61,59,.12)}.form-panel .form-label{color:#e1f1eb}.form-label{font-size:.83rem;font-weight:700;color:#40515c;margin-bottom:.42rem}.form-control,.form-select{border:1px solid #dce6e5;border-radius:11px;padding:.72rem .85rem;background:#fbfdfc;color:var(--ink);font-size:.91rem}.form-control:focus,.form-select:focus{border-color:#62b99a;box-shadow:0 0 0 .22rem rgba(98,185,154,.16);background:#fff}.form-panel .form-control{background:#ffffff;color:var(--ink)}.form-panel .form-control::placeholder{color:#9aa8ad}.form-error{color:#ffc6c6;min-height:1.2em}.btn{border-radius:10px;font-weight:700;padding:.65rem 1rem;transition:transform .18s,box-shadow .18s}.btn:hover{transform:translateY(-1px)}.btn-success{background:#a9ebcf;border-color:#a9ebcf;color:#123d3b}.btn-success:hover,.btn-success:focus{background:#8cdbb9;border-color:#8cdbb9;color:#123d3b}.btn-primary{background:#176e5c;border-color:#176e5c}.btn-primary:hover{background:#105746;border-color:#105746}.btn-outline-primary{color:#176e5c;border-color:#b7d8cb}.portfolio-btn{border:1px solid #e5ece9;background:#f8fbf9;padding:12px 14px;border-radius:12px;color:#43545b}.portfolio-btn:hover{background:#edf7f2;border-color:#c4e6d5}.portfolio-btn.active{background:#176e5c;color:white;border-color:#176e5c;box-shadow:0 6px 15px #176e5c22}.item-card{background:#f7faf8;border:1px solid #e7efeb;border-radius:15px!important;padding:17px!important}.item-card h3{font-family:Manrope,sans-serif;color:#1b3a37}.item-card p{color:#66777a;line-height:1.6}.form-check-input:checked{background-color:#176e5c;border-color:#176e5c}.form-check-label{color:#65767b}.form-panel .form-check-label{color:#d3e5de}.form-panel .small{color:#c1d9d0}.section-kicker{color:#188267;margin-bottom:5px}.card p strong{color:#40545a}.card #portfolio-name{font-family:Manrope,sans-serif;letter-spacing:-.04em}.card #portfolio-enjoy,.card #portfolio-tried,.card #portfolio-curious{color:#65777b}.form-panel .form-error{color:#ffc6c6}#import-status{min-height:1.2em}.form-panel .btn-success{color:#123d3b}
+@media(max-width:767px){.nav-note{font-size:.72rem}.app-card,.form-panel{border-radius:17px}}
