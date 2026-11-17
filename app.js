@@ -187,8 +187,11 @@ document.querySelector('#export-portfolio').addEventListener('click', () => {
     const link = document.createElement('a');
     link.href = url;
     link.download = 'my-portfolio.json';
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    // Give the browser time to start the download before releasing the Blob URL.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 });
 
 // Import JSON pasted in the textarea or selected from a local file.

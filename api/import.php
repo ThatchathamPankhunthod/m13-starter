@@ -33,7 +33,7 @@ if (in_array($scopedFileHash, $imports, true)) {
 
 // Accept a single Item, an array of Items, or an exported Portfolio containing items.
 if (isset($data['items']) && is_array($data['items'])) $items = $data['items'];
-elseif (array_is_list($data)) $items = $data;
+elseif (isListArray($data)) $items = $data;
 else $items = [$data];
 
 $existing = $portfolios[$targetIndex]['items'] ?? [];
@@ -68,7 +68,9 @@ $portfolios[$targetIndex]['items'] = $existing;
 writePortfolios($portfolios);
 {
     $imports[] = $scopedFileHash;
-    file_put_contents($importsFile, json_encode(array_values(array_unique($imports)), JSON_PRETTY_PRINT));
+    if (@file_put_contents($importsFile, json_encode(array_values(array_unique($imports)), JSON_PRETTY_PRINT), LOCK_EX) === false) {
+        sendJson(['error' => 'Cannot save import history. Check write permission for ' . $importsFile], 500);
+    }
 }
 sendJson(['duplicateFile' => false, 'imported' => $imported, 'skipped' => $skipped], 200);
 
@@ -80,4 +82,15 @@ function itemKey($item) {
         strtolower(trim((string)($item['description'] ?? ''))),
     ];
     return hash('sha256', json_encode($normalized));
+}
+
+// Compatible with PHP 7.4+ (array_is_list() exists only in PHP 8.1+).
+function isListArray($value) {
+    if (function_exists('array_is_list')) return array_is_list($value);
+    if (!is_array($value)) return false;
+    $expected = 0;
+    foreach ($value as $key => $_) {
+        if ($key !== $expected++) return false;
+    }
+    return true;
 }
