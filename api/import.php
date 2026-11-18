@@ -8,8 +8,12 @@ $input = json_decode(file_get_contents('php://input'), true);
 if (!is_array($input)) sendJson(['error' => 'Invalid request body'], 400);
 $portfolioId = $input['portfolioId'] ?? '';
 $data = $input['data'] ?? null;
+$fileHash = $input['fileHash'] ?? '';
 if (!is_string($portfolioId) || $portfolioId === '' || !is_array($data)) {
     sendJson(['error' => 'Portfolio and valid JSON data are required'], 400);
+}
+if (!is_string($fileHash) || !preg_match('/^(?:[a-f0-9]{64}|fnv-[a-f0-9]+)$/', $fileHash)) {
+    sendJson(['error' => 'Invalid file fingerprint'], 400);
 }
 
 $portfolios = readPortfolios();
@@ -19,12 +23,17 @@ foreach ($portfolios as $i => $portfolio) {
 }
 if ($targetIndex === null) sendJson(['error' => 'Portfolio not found'], 404);
 
-// Duplicate detection is based on Items currently in this Portfolio.
-// This allows importing an Item again after it has been deleted.
+// A persistent fingerprint prevents the exact same source file being imported again.
+$importsFile = DATA_DIR . '/imports.json';
+$imports = file_exists($importsFile) ? (json_decode(file_get_contents($importsFile), true) ?: []) : [];
+$scopedFileHash = $portfolioId . ':' . $fileHash;
+if (in_array($scopedFileHash, $imports, true)) {
+    sendJson(['duplicateFile' => true, 'imported' => 0, 'skipped' => 0]);
+}
 
 // Accept a single Item, an array of Items, or an exported Portfolio containing items.
 if (isset($data['items']) && is_array($data['items'])) $items = $data['items'];
-elseif (isListArray($data)) $items = $data;
+elseif (array_is_list($data)) $items = $data;
 else $items = [$data];
 
 $existing = $portfolios[$targetIndex]['items'] ?? [];
@@ -57,6 +66,10 @@ foreach ($items as $item) {
 }
 $portfolios[$targetIndex]['items'] = $existing;
 writePortfolios($portfolios);
+{
+    $imports[] = $scopedFileHash;
+    file_put_contents($importsFile, json_encode(array_values(array_unique($imports)), JSON_PRETTY_PRINT));
+}
 sendJson(['duplicateFile' => false, 'imported' => $imported, 'skipped' => $skipped], 200);
 
 function itemKey($item) {
@@ -67,15 +80,4 @@ function itemKey($item) {
         strtolower(trim((string)($item['description'] ?? ''))),
     ];
     return hash('sha256', json_encode($normalized));
-}
-
-// Compatible with PHP 7.4+ (array_is_list() exists only in PHP 8.1+).
-function isListArray($value) {
-    if (function_exists('array_is_list')) return array_is_list($value);
-    if (!is_array($value)) return false;
-    $expected = 0;
-    foreach ($value as $key => $_) {
-        if ($key !== $expected++) return false;
-    }
-    return true;
 }

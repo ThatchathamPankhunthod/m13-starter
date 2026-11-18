@@ -2,4 +2,3 @@
 *.key
 .env
 local-data/
-delete-config.php
